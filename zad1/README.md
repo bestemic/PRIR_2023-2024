@@ -1,0 +1,5 @@
+### Kompilacja
+
+```bash
+mpiCC -O2 Alloc.cpp Life.cpp LifeSequentialImplementation.cpp Main.cpp Rules.cpp SimpleRules.cpp
+``````

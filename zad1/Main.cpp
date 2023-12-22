@@ -3,7 +3,7 @@
  */
 
 #include "Life.h"
-#include "LifeSequentialImplementation.h"
+#include "LifeParallelImplementation.h"
 #include "Rules.h"
 #include "SimpleRules.h"
 #include "Alloc.h"
@@ -72,7 +72,7 @@ int main(int argc, char **argv)
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
 	Rules *rules = new SimpleRules();
-	Life *life = new LifeSequentialImplementation();
+	Life *life = new LifeParallelImplementation();
 	life->setRules(rules);
 	life->setSize(simulationSize);
 
