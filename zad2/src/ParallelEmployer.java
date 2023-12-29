@@ -23,7 +23,7 @@ public class ParallelEmployer implements Employer {
                 exit = orders.get(result.orderID());
 
                 for (int id : orders.keySet()) {
-                    synchronized (orders.get(id)){
+                    synchronized (orders.get(id)) {
                         orders.get(id).notify();
                     }
                 }
@@ -66,30 +66,33 @@ public class ParallelEmployer implements Employer {
 
     private void explore(Location location) {
         Thread thread = new Thread(() -> {
+            int orderId = -1;
             synchronized (orders) {
                 if (!isVisited(location) && !isOrdered(location)) {
                     orderedLocations.add(location);
-                    int orderId = orderInterface.order(location);
+                    orderId = orderInterface.order(location);
                     orders.put(orderId, location);
+                }
+            }
 
-                    synchronized (orders.get(orderId)) {
-                        try {
-                            orders.get(orderId).wait();
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
+            if (orderId != -1) {
+                synchronized (orders.get(orderId)) {
+                    try {
+                        orders.get(orderId).wait();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
                     }
+                }
 
-                    if (exit == null) {
-                        visitedLocations.add(location);
-                        orderedLocations.remove(location);
+                if (exit == null) {
+                    visitedLocations.add(location);
+                    orderedLocations.remove(location);
 
-                        List<Direction> allowedDirections = ordersResults.get(orderId);
+                    List<Direction> allowedDirections = ordersResults.get(orderId);
 
-                        for (Direction direction : allowedDirections) {
-                            Location nextLocation = direction.step(location);
-                            explore(nextLocation);
-                        }
+                    for (Direction direction : allowedDirections) {
+                        Location nextLocation = direction.step(location);
+                        explore(nextLocation);
                     }
                 }
             }
