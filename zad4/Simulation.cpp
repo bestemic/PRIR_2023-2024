@@ -90,7 +90,7 @@ void Simulation::updateVelocity() {
 }
 
 void Simulation::updatePosition() {
-	// #pragma omp parallel for
+	#pragma omp parallel for
 	for (int idx = 0; idx < particles; idx++) {
 		x[idx] += dt * (Vx[idx] + dt_2 * Fx[idx] / m[idx]);
 		y[idx] += dt * (Vy[idx] + dt_2 * Fy[idx] / m[idx]);
@@ -99,7 +99,7 @@ void Simulation::updatePosition() {
 
 void Simulation::preventMoveAgainstForce() {
 	double dotProduct;
-	// #pragma omp parallel for private(dotProduct)
+	#pragma omp parallel for private(dotProduct)
 	for (int idx = 0; idx < particles; idx++) {
 		dotProduct = Vx[idx] * Fx[idx] + Vy[idx] * Fy[idx];
 		if (dotProduct < 0.0) {
@@ -111,7 +111,7 @@ void Simulation::preventMoveAgainstForce() {
 double Simulation::Ekin() {
 	double ek = 0.0;
 
-	// #pragma omp parallel for reduction(+:ek)
+	#pragma omp parallel for reduction(+:ek)
 	for (int idx = 0; idx < particles; idx++) {
 		ek += m[idx] * (Vx[idx] * Vx[idx] + Vy[idx] * Vy[idx]) * 0.5;
 	}
@@ -186,4 +186,3 @@ double Simulation::minDistance(int idx) {
 
 Simulation::~Simulation() {
 }
-
