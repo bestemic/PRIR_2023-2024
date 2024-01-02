@@ -27,6 +27,27 @@ public class ParallelEmployer implements Employer {
         return exit;
     }
 
+    private void processResult(Result result) {
+        int orderId = result.orderID();
+        if (result.type() == LocationType.EXIT) {
+            exit = orders.get(orderId);
+            notifyExit();
+        }
+        synchronized (ordersResults) {
+            ordersResults.put(orderId, result.allowedDirections());
+        }
+        synchronized (orders.get(orderId)) {
+            orders.get(orderId).notify();
+        }
+    }
+
+    private void runExploration(Location startLocation, List<Direction> directions) {
+        for (Direction direction : directions) {
+            Location location = direction.step(startLocation);
+            exploreLocation(location);
+        }
+    }
+
     private void exploreLocation(Location location) {
         Thread thread = new Thread(() -> {
             int orderId = checkAndOrder(location);
@@ -38,7 +59,6 @@ public class ParallelEmployer implements Employer {
                 }
             }
         });
-
         thread.start();
     }
 
@@ -66,20 +86,6 @@ public class ParallelEmployer implements Employer {
         return orderId;
     }
 
-    private void processResult(Result result) {
-        int orderId = result.orderID();
-        if (result.type() == LocationType.EXIT) {
-            exit = orders.get(orderId);
-            notifyExit();
-        }
-        synchronized (ordersResults) {
-            ordersResults.put(orderId, result.allowedDirections());
-        }
-        synchronized (orders.get(orderId)) {
-            orders.get(orderId).notify();
-        }
-    }
-
     private void notifyExit() {
         synchronized (lock) {
             lock.notify();
@@ -93,13 +99,6 @@ public class ParallelEmployer implements Employer {
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
-        }
-    }
-
-    private void runExploration(Location startLocation, List<Direction> directions) {
-        for (Direction direction : directions) {
-            Location location = direction.step(startLocation);
-            exploreLocation(location);
         }
     }
 
